@@ -1,0 +1,63 @@
+Private Sub CreateNewBlock_Click()
+
+    '取得使用者輸入的積木名稱
+    Dim blockName As String
+    blockName = BlockNameInput.Value
+    
+    '取得使用者選擇的產品型號
+    Dim selectedModel As String
+    selectedModel = ModelSelection.Value
+    
+    '將積木名稱新增至工作表2
+    Dim ws2 As Worksheet
+    Set ws2 = ThisWorkbook.Worksheets("Sheet2")
+    ws2.Cells(ws2.Rows.Count, 1).End(xlUp).Offset(1, 0).Value = blockName
+    
+    '將產品型號新增至工作表3
+    Dim ws3 As Worksheet
+    Set ws3 = ThisWorkbook.Worksheets("Sheet3")
+    ws3.Cells(ws3.Rows.Count, 1).End(xlUp).Offset(1, 0).Value = selectedModel
+    
+    '新增積木
+    Dim newBlock As Object
+    Set newBlock = ThisWorkbook.VBProject.VBComponents.Add(vbext_ct_MSForm)
+    With newBlock
+        .Name = blockName
+        
+        '設定積木的外觀和位置
+        .Properties("Caption") = blockName
+        .Properties("Height") = 100
+        .Properties("Width") = 100
+        .Properties("Top") = MousePosition.Y
+        .Properties("Left") = MousePosition.X
+        
+        '新增下拉式選單
+        Dim modelList As Range
+        Set modelList = ws2.Range("A1").CurrentRegion
+        Set modelList = modelList.Resize(modelList.Rows.Count - 1, 1).Offset(1, 0)
+        With .Design.Controls.Add("Forms.ComboBox.1")
+            .Name = "ModelSelection"
+            .List = modelList.Value
+            .Top = 10
+            .Left = 10
+            .Width = 80
+        End With
+        
+        '新增相關資訊的輸入格
+        Dim blockInfo As Range
+        Set blockInfo = ws3.Range("A1").CurrentRegion
+        Set blockInfo = blockInfo.Resize(blockInfo.Rows.Count - 1, blockInfo.Columns.Count).Offset(1, 0)
+        Dim i As Long
+        For i = 1 To blockInfo.Columns.Count
+            With .Design.Controls.Add("Forms.TextBox.1")
+                .Name = blockInfo.Cells(1, i).Value
+                .Value = blockInfo.Cells(2, i).Value
+                .Top = 40
+                .Left = 10 + (i - 1) * 30
+                .Width = 20
+            End With
+        Next i
+        
+    End With
+    
+End Sub
